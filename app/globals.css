@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-ink-rule;
+  }
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+  }
+  ::selection {
+    background: #FF7A59;
+    color: #15121F;
+  }
+  :focus-visible {
+    outline: 2px solid #FF7A59;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .highlight-mark {
+    background-image: linear-gradient(#FF7A59, #FF7A59);
+    background-repeat: no-repeat;
+    background-size: 100% 0.4em;
+    background-position: 0 88%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
