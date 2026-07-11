@@ -1,9 +1,8 @@
 import { Mic, FileText, ListChecks } from "lucide-react";
 import { Waveform } from "@/components/Waveform";
-import { UploadDropzone } from "@/components/UploadDropzone";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
+import Link from "next/link"
 const STEPS = [
   {
     icon: Mic,
@@ -27,9 +26,12 @@ export default function Home() {
     <main className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
       <header className="flex items-center justify-between">
         <span className="font-display text-lg italic text-paper">Lectern</span>
-        <Button variant="secondary" className="text-xs">
-          Sign in
-        </Button>
+        <Link href="/login">
+  <Button variant="secondary" className="text-xs">
+    Sign in
+  </Button>
+</Link>
+        
       </header>
 
       <section className="mt-16 grid gap-12 sm:mt-24 lg:grid-cols-2 lg:items-center lg:gap-8">
@@ -47,16 +49,22 @@ export default function Home() {
             finished typing your notes.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+          href="/login"
+          className="animate-rise block cursor-pointer rounded-lg text-center transition-colors hover:border-highlighter hover:bg-highlighter/5 [animation-delay:150ms]"
+        >
             <Button>Try it with a lecture</Button>
-            <span className="font-mono text-xs text-paper-dim">
-              no account needed to preview
-            </span>
+            </Link>
           </div>
         </div>
 
-        <div className="animate-rise [animation-delay:150ms]">
-          <UploadDropzone />
-        </div>
+        <Link
+          href="/login"
+          className="animate-rise block cursor-pointer rounded-lg border-2 border-dashed border-ink-rule p-10 text-center transition-colors hover:border-highlighter hover:bg-highlighter/5 [animation-delay:150ms]"
+        >
+          <p className="text-paper">Log in to upload your first lecture</p>
+          <p className="mt-2 text-sm text-paper-dim">Free, no card required</p>
+        </Link>
       </section>
 
       <section className="mt-24 sm:mt-32">

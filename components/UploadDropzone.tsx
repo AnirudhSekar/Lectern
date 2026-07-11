@@ -1,140 +1,141 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { FileAudio, UploadCloud } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { validateAudioFile, uploadLectureAudio } from "@/lib/supabase/storage";
+import { createLectureRow, attachAudioPath } from "@/lib/supabase/lectures";
+import { cn } from "@/lib/utils";
+import { compressAudioForUpload } from "@/lib/audio/compress";
+import { useRouter } from "next/navigation";
+import { ProcessingSteps } from "./ProcessingSteps";
+type Stage = "idle" | "validating" | "compressing" | "creating" | "uploading" | "done" | "error";
+interface UploadDropzoneProps {
+  userId: string;
+}
 
-type Stage = "idle" | "queued" | "transcribing" | "summarizing" | "done";
-
-const STAGE_LABEL: Record<Exclude<Stage, "idle">, string> = {
-  queued: "Queued",
-  transcribing: "Transcribing",
-  summarizing: "Writing summary",
-  done: "Ready to study",
-};
-
-const STAGE_ORDER: Stage[] = ["queued", "transcribing", "summarizing", "done"];
-
-export function UploadDropzone() {
+export function UploadDropzone({ userId }: UploadDropzoneProps) {
+  const router = useRouter();
   const [stage, setStage] = useState<Stage>("idle");
+  const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const timeoutIds = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const handleFile = useCallback(
+    async (file: File) => {
+      setFileName(file.name);
+      setErrorMsg(null);
+      setStage("validating");
 
-  useEffect(() => {
-    return () => {
-      timeoutIds.current.forEach(clearTimeout);
-    };
-  }, []);
+      const validationError = validateAudioFile(file);
+      if (validationError) {
+        setErrorMsg(validationError);
+        setStage("error");
+        return;
+      }
 
-  const runDemoPipeline = useCallback((name: string) => {
-    setFileName(name);
-    timeoutIds.current.forEach(clearTimeout);
-    timeoutIds.current = STAGE_ORDER.map((s, i) =>
-      setTimeout(() => setStage(s), (i + 1) * 900)
-    );
-  }, []);
+      const lectureId = crypto.randomUUID();
+      const COMPRESS_THRESHOLD = 5 * 1024 * 1024; // below this, compression overhead isn't worth it
 
-  const handleFiles = useCallback(
-    (files: FileList | null) => {
-      const file = files?.[0];
-      if (!file) return;
-      runDemoPipeline(file.name);
+      try {
+        let uploadFile = file;
+        if (file.size > COMPRESS_THRESHOLD) {
+          setStage("compressing");
+          uploadFile = await compressAudioForUpload(file, setProgress);
+          setProgress(0);
+        }
+
+        setStage("creating");
+        await createLectureRow(userId, lectureId, file.name);
+
+        setStage("uploading");
+        const path = await uploadLectureAudio(userId, lectureId, uploadFile, setProgress);
+
+      await attachAudioPath(lectureId, path);
+
+        await fetch("/api/trigger-processing", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lectureId }),
+        });
+
+        router.push(`/lecture/${lectureId}`);
+
+      } catch (err) {
+        setErrorMsg(err instanceof Error ? err.message : "Upload failed");
+        setStage("error");
+      }
     },
-    [runDemoPipeline]
+    [userId]
   );
 
+  const onDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+  const onPick = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    },
+    [handleFile]
+  );
+
+const busy =
+    stage === "validating" || stage === "compressing" || stage === "creating" || stage === "uploading";
   return (
-    <Card>
+    <div>
       <div
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragOver(true);
         }}
         onDragLeave={() => setIsDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setIsDragOver(false);
-          handleFiles(e.dataTransfer.files);
-        }}
+        onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-        }}
         className={cn(
-          "flex cursor-pointer flex-col items-center gap-3 rounded-md border-2 border-dashed border-ink-rule px-6 py-10 text-center transition-colors",
-          isDragOver && "border-highlighter bg-highlighter/5"
+          "cursor-pointer rounded-lg border-2 border-dashed p-10 text-center transition-colors",
+          isDragOver ? "border-highlighter bg-highlighter/5" : "border-ink-rule"
         )}
       >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="audio/*"
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-        <UploadCloud className="h-7 w-7 text-paper-dim" aria-hidden />
-        <div>
-          <p className="font-medium text-paper">Drop a lecture recording here</p>
-          <p className="mt-1 text-sm text-paper-dim">
-            or click to browse — MP3, M4A, WAV up to 200MB
-          </p>
-        </div>
+        <input ref={inputRef} type="file" accept="audio/*" className="hidden" onChange={onPick} />
+        <p className="text-paper">
+          {fileName ?? "Drop an audio file here, or click to choose one"}
+        </p>
       </div>
 
-      {fileName && (
-        <div className="border-t border-ink-rule px-6 py-5">
-          <div className="flex items-center gap-3">
-            <FileAudio className="h-5 w-5 shrink-0 text-highlighter" aria-hidden />
-            <span className="truncate text-sm text-paper">{fileName}</span>
-          </div>
-          <ol className="mt-4 flex flex-wrap gap-2 font-mono text-xs">
-            {STAGE_ORDER.map((s) => {
-              const reached =
-                stage !== "idle" && STAGE_ORDER.indexOf(stage) >= STAGE_ORDER.indexOf(s);
-              const isDone = s === "done" && reached;
-              return (
-                <li
-                  key={s}
-                  className={cn(
-                    "rounded-sm border px-2.5 py-1 transition-colors",
-                    isDone
-                      ? "border-mint/40 bg-mint/10 text-mint"
-                      : reached
-                        ? "border-highlighter/40 bg-highlighter/10 text-highlighter"
-                        : "border-ink-rule text-paper-dim"
-                  )}
-                >
-                  {STAGE_LABEL[s as Exclude<Stage, "idle">]}
-                </li>
-              );
-            })}
-          </ol>
-          {stage === "done" && (
-            <p className="mt-4 text-sm text-paper-dim">
-              This is a local UI preview — the transcription pipeline connects in
-              Sub-phase 1C.
-            </p>
-          )}
-        </div>
+     {stage !== "idle" && stage !== "error" && stage !== "done" && (
+      <div className="mt-6">
+        <ProcessingSteps
+          steps={[
+            { key: "compress", label: "Compress" },
+            { key: "upload", label: "Upload" },
+            { key: "transcribe", label: "Transcribe" },
+            { key: "summarize", label: "Summarize" },
+          ]}
+          currentIndex={
+            stage === "validating" || stage === "compressing" ? 0 :
+            stage === "creating" || stage === "uploading" ? 1 : 0
+          }
+        />
+      </div>
+    )}
+
+      {stage === "error" && (
+        <p className="mt-4 text-sm text-highlighter">{errorMsg}</p>
       )}
 
-      {!fileName && (
-        <div className="border-t border-ink-rule px-6 py-4 text-center">
-          <Button
-            variant="ghost"
-            className="text-xs"
-            onClick={() => runDemoPipeline("intro-to-thermodynamics.m4a")}
-          >
-            or preview with a sample file →
-          </Button>
-        </div>
+      {busy && (
+        <Button disabled className="mt-4 w-full">
+          Working…
+        </Button>
       )}
-    </Card>
+    </div>
   );
 }
