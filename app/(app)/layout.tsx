@@ -5,7 +5,6 @@ import { AppHeader } from '@/components/AppHeader';
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  console.log(user.user_metadata);
 
   if (!user) {
     redirect('/login');

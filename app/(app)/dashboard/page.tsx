@@ -13,11 +13,11 @@ export default async function DashboardPage() {
   }
 
   const { data: lectures } = await supabase
-    .from('lectures')
-    .select('id, title, status, duration_seconds, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
+  .from('lectures')
+  .select('id, title, status, duration_seconds, created_at, audio_storage_path, deleted_at')
+  .eq('user_id', user.id)
+  .is('deleted_at', null)
+  .order('created_at', { ascending: false });
   return (
     <main className="mx-auto max-w-4xl px-6 py-10 sm:py-16">
       <header className="flex items-center justify-between">

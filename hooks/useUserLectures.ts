@@ -10,8 +10,9 @@ export interface LectureListItem {
   status: LectureStatus;
   duration_seconds: number | null;
   created_at: string;
+  audio_storage_path: string | null;
+  deleted_at: string | null;
 }
-
 export function useUserLectures(userId: string, initialLectures: LectureListItem[]) {
   const [lectures, setLectures] = useState<LectureListItem[]>(initialLectures);
 
@@ -49,5 +50,5 @@ export function useUserLectures(userId: string, initialLectures: LectureListItem
     };
   }, [userId]);
 
-  return lectures;
+  return [lectures, setLectures] as const;
 }

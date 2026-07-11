@@ -15,7 +15,7 @@ export default async function UploadPage() {
       <div className="w-full max-w-lg">
         <h1 className="font-display text-2xl text-paper">Upload a lecture</h1>
         <p className="mt-2 text-sm text-paper-dim">
-          Audio files up to 200MB. We&apos;ll transcribe and summarize it.
+          Audio Files. We&apos;ll transcribe and summarize it.
         </p>
         <div className="mt-6">
           <UploadDropzone userId={user.id} />

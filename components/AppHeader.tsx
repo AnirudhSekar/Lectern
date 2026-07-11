@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, LayoutGrid, Upload as UploadIcon, LogOut } from 'lucide-react';
+import { ChevronDown, LayoutGrid, Upload as UploadIcon, LogOut, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { signOut } from '@/lib/supabase/auth';
-
+import Image from 'next/image';
 interface AppHeaderProps {
   email: string;
   name: string | null;
@@ -51,7 +51,7 @@ export function AppHeader({ email, name, avatarUrl }: AppHeaderProps) {
             className="flex items-center gap-2 rounded-full border border-ink-rule py-1 pl-1 pr-3 transition-colors hover:border-highlighter/40"
           >
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={displayName}
                 className="h-7 w-7 rounded-full"
@@ -92,6 +92,14 @@ export function AppHeader({ email, name, avatarUrl }: AppHeaderProps) {
                   <UploadIcon className="h-4 w-4" aria-hidden />
                   Upload new
                 </Link>
+                <Link
+                    href="/trash"
+                    className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm text-paper hover:bg-highlighter/10"
+                    onClick={() => setOpen(false)}
+                    >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                    Trash
+                    </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
