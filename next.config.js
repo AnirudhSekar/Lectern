@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Accommodates any HTTPS domain
+      },
+      {
+        protocol: 'http',
+        hostname: '**', // Accommodates any HTTP domain
+      },
+    ],
+  },
   async headers() {
     return [
       {

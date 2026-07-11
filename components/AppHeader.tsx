@@ -57,7 +57,8 @@ export function AppHeader({ email, name, avatarUrl }: AppHeaderProps) {
                 className="h-7 w-7 rounded-full"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
-
+                width={28}
+                height={28}
               />
             ) : (
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-highlighter/10 font-mono text-xs text-highlighter">
