@@ -3,6 +3,8 @@ import { Waveform } from "@/components/Waveform";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/server";
+import {redirect} from "next/navigation";
 const STEPS = [
   {
     icon: Mic,
@@ -21,7 +23,13 @@ const STEPS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+    const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect('/dashboard');
+  }
   return (
     <main className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
       <header className="flex items-center justify-between">

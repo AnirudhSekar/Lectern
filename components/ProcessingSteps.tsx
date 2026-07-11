@@ -25,8 +25,8 @@ export function ProcessingSteps({ steps, currentIndex, failed = false }: Process
               <div
                 className={cn(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border font-mono text-xs transition-colors duration-300",
-                  isDone && "border-mint bg-mint/10 text-mint",
-                  isActive && !isFailedHere && "border-highlighter bg-highlighter/10 text-highlighter animate-pulse",
+                  isDone && "border-highlighter bg-highlighter/10 text-highlighter",
+                  isActive && !isFailedHere && "border-highlighter bg-highlighter/20 text-highlighter animate-pulse",
                   isFailedHere && "border-highlighter bg-highlighter text-ink",
                   !isDone && !isActive && "border-ink-rule text-paper-dim"
                 )}
@@ -36,7 +36,7 @@ export function ProcessingSteps({ steps, currentIndex, failed = false }: Process
               <span
                 className={cn(
                   "font-mono text-[11px] uppercase tracking-wide leading-tight text-center whitespace-nowrap",
-                  isDone && "text-mint",
+                  isDone && "text-highlighter",
                   isActive && "text-paper",
                   !isDone && !isActive && "text-paper-dim"
                 )}
@@ -48,7 +48,7 @@ export function ProcessingSteps({ steps, currentIndex, failed = false }: Process
               <div
                 className={cn(
                   "h-px flex-1 transition-colors duration-300",
-                  isDone ? "bg-mint" : "bg-ink-rule"
+                  isDone ? "bg-highlighter" : "bg-ink-rule"
                 )}
               />
             )}

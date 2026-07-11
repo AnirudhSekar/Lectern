@@ -48,7 +48,6 @@ export async function compressAudioForUpload(
       type: "audio/mpeg",
     });
 
-    console.log(`Compression: ${file.size} bytes → ${compressed.size} bytes`);
     return compressed.size < file.size ? compressed : file;  } finally {
     ffmpeg.off("progress", handleProgress);
     await ffmpeg.deleteFile(inputName).catch(() => {});

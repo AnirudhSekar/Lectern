@@ -1,6 +1,7 @@
 import { inngest } from "@/lib/inngest/client";
 import { transcribeLecture } from "@/lib/ai/transcribe";
 import { summarizeLecture } from "@/lib/ai/summarize";
+import { embedLectureTranscript } from "@/lib/ai/embed";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const processLecture = inngest.createFunction(
@@ -24,6 +25,18 @@ export const processLecture = inngest.createFunction(
 
       await step.run("summarize", async () => {
         return summarizeLecture(lectureId);
+      });
+
+      await step.run("embed-transcript", async () => {
+        try {
+          await embedLectureTranscript(lectureId);
+        } catch (err) {
+          // Deliberately swallowed — embedding is additive (search),
+          // not core to the product (summary/questions/transcript).
+          // A Gemini hiccup here shouldn't flip an otherwise-successful
+          // lecture to `failed`. Logged so it's visible, not silently lost.
+          console.error(`Embedding failed for lecture ${lectureId}:`, err);
+        }
       });
 
       await step.run("mark-done", async () => {

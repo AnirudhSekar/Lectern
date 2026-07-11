@@ -111,21 +111,40 @@ const busy =
       </div>
 
      {stage !== "idle" && stage !== "error" && stage !== "done" && (
-      <div className="mt-6">
-        <ProcessingSteps
-          steps={[
-            { key: "compress", label: "Compress" },
-            { key: "upload", label: "Upload" },
-            { key: "transcribe", label: "Transcribe" },
-            { key: "summarize", label: "Summarize" },
-          ]}
-          currentIndex={
-            stage === "validating" || stage === "compressing" ? 0 :
-            stage === "creating" || stage === "uploading" ? 1 : 0
-          }
-        />
+  <div className="mt-6">
+    <ProcessingSteps
+      steps={[
+        { key: "compress", label: "Compress" },
+        { key: "upload", label: "Upload" },
+        { key: "transcribe", label: "Transcribe" },
+        { key: "summarize", label: "Summarize" },
+      ]}
+      currentIndex={
+        stage === "validating" || stage === "compressing" ? 0 :
+        stage === "creating" || stage === "uploading" ? 1 : 0
+      }
+    />
+
+    {(stage === "compressing" || stage === "uploading") && (
+      <div className="mt-4">
+        <div className="flex items-center justify-between text-xs text-paper-dim">
+          <span>{stage === "compressing" ? "Compressing audio…" : "Uploading…"}</span>
+          <span className="font-mono">{progress}%</span>
+        </div>
+        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-ink-rule">
+          <div
+            className="h-full rounded-full bg-highlighter transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </div>
     )}
+
+    {stage === "creating" && (
+      <p className="mt-4 text-xs text-paper-dim">Creating lecture record…</p>
+    )}
+  </div>
+)}
 
       {stage === "error" && (
         <p className="mt-4 text-sm text-highlighter">{errorMsg}</p>
