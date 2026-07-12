@@ -27,18 +27,23 @@ export async function compressAudioForUpload(
   onProgress?: (percent: number) => void
 ): Promise<File> {
   const ffmpeg = await getFFmpeg();
+  const isVideo = file.type.startsWith("video/");
 
   const handleProgress = ({ progress }: { progress: number }) => {
     onProgress?.(Math.min(100, Math.round(progress * 100)));
   };
   ffmpeg.on("progress", handleProgress);
 
-  const inputName = `input.${file.name.split(".").pop() || "audio"}`;
+  const inputName = `input.${file.name.split(".").pop() || (isVideo ? "mp4" : "audio")}`;
   const outputName = "output.mp3";
 
   try {
     await ffmpeg.writeFile(inputName, await fetchFile(file));
-    await ffmpeg.exec(["-i", inputName, "-ac", "1", "-ar", "16000", "-b:a", "32k", outputName]);
+    // -vn explicitly discards any video stream. For audio inputs this is
+    // a no-op (there's nothing to drop); for video inputs it's what
+    // guarantees ffmpeg extracts audio-only rather than relying on the
+    // .mp3 output container to implicitly ignore video data.
+    await ffmpeg.exec(["-i", inputName, "-vn", "-ac", "1", "-ar", "16000", "-b:a", "32k", outputName]);
 
     const data = await ffmpeg.readFile(outputName);
     const bytes = typeof data === "string" ? new TextEncoder().encode(data) : Uint8Array.from(data);
@@ -48,7 +53,12 @@ export async function compressAudioForUpload(
       type: "audio/mpeg",
     });
 
-    return compressed.size < file.size ? compressed : file;  } finally {
+    // Video MUST always return the extracted audio — the original video
+    // file can never be uploaded as-is, regardless of the size
+    // comparison. Audio inputs keep the original "only use compression
+    // if it actually helped" behavior.
+    return isVideo || compressed.size < file.size ? compressed : file;
+  } finally {
     ffmpeg.off("progress", handleProgress);
     await ffmpeg.deleteFile(inputName).catch(() => {});
     await ffmpeg.deleteFile(outputName).catch(() => {});

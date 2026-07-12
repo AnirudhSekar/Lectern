@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { UploadDropzone } from "@/components/UploadDropzone";
+import { UploadTabs } from "@/components/UploadTabs";
 
 export default async function UploadPage() {
   const supabase = await createClient();
@@ -18,7 +18,7 @@ export default async function UploadPage() {
           Audio Files. We&apos;ll transcribe and summarize it.
         </p>
         <div className="mt-6">
-          <UploadDropzone userId={user.id} />
+          <UploadTabs userId={user.id} />
         </div>
       </div>
     </main>

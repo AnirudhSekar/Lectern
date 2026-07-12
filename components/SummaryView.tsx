@@ -6,6 +6,8 @@ import { useLectureStatus, type LectureStatus } from '@/hooks/useLectureStatus';
 import { Card } from './ui/card';
 import { cn } from '@/lib/utils';
 import { ProcessingSteps } from './ProcessingSteps';
+import { useSearchParams } from 'next/navigation';
+import { LectureChat } from './LectureChat';
 
 interface StudyQuestion {
   question: string;
@@ -42,7 +44,14 @@ export function SummaryView({
   const currentStatus = status ?? initialStatus;
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
   const [showTranscript, setShowTranscript] = useState(false);
+  const searchParams = useSearchParams();
+  const highlightChar = searchParams.get('highlight');
 
+    useEffect(() => {
+    if (highlightChar && transcriptText) {
+        setShowTranscript(true);
+    }
+    }, [highlightChar, transcriptText]);
   // If the pipeline finishes AFTER this page already loaded, the
   // summary/transcript props above are stale (they were fetched
   // server-side before completion). router.refresh() re-runs the
@@ -180,11 +189,25 @@ return (
           </span>
         </button>
         {showTranscript && (
-          <div className="mt-4 max-h-96 overflow-y-auto rounded-sm border border-ink-rule bg-ink-rule/20 p-4 text-sm leading-relaxed whitespace-pre-wrap text-paper-dim">
-            {transcriptText ?? "Transcript unavailable."}
-          </div>
-        )}
+            <div className="mt-4 max-h-96 overflow-y-auto rounded-sm border border-ink-rule bg-ink-rule/20 p-4 text-sm leading-relaxed whitespace-pre-wrap text-paper-dim">
+                {highlightChar && transcriptText ? (
+                <>
+                    {transcriptText.slice(0, Number(highlightChar))}
+                    <mark
+                    ref={(el) => el?.scrollIntoView({ block: 'center' })}
+                    className="bg-highlighter/30 text-paper rounded-sm px-0.5"
+                    >
+                    {transcriptText.slice(Number(highlightChar), Number(highlightChar) + 300)}
+                    </mark>
+                    {transcriptText.slice(Number(highlightChar) + 300)}
+                </>
+                ) : (
+                transcriptText ?? "Transcript unavailable."
+                )}
+            </div>
+            )}
       </Card>
+      <LectureChat lectureId={lectureId} />
     </div>
   </div>
 )};

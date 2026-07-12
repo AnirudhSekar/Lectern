@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { LectureList } from '@/components/LectureList';
 import { Button } from '@/components/ui/button';
+import { SemanticSearchBar } from '@/components/SemanticSearchBar';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
       </header>
 
       <div className="mt-10">
+        <SemanticSearchBar />
         <LectureList userId={user.id} initialLectures={lectures ?? []} />
       </div>
     </main>

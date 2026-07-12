@@ -15,6 +15,7 @@ interface UploadDropzoneProps {
 
 export function UploadDropzone({ userId }: UploadDropzoneProps) {
   const router = useRouter();
+  const [isVideoFile, setIsVideoFile] = useState(false);
   const [stage, setStage] = useState<Stage>("idle");
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -25,6 +26,7 @@ export function UploadDropzone({ userId }: UploadDropzoneProps) {
     async (file: File) => {
       setFileName(file.name);
       setErrorMsg(null);
+      setIsVideoFile(file.type.startsWith("video/"));
       setStage("validating");
 
       const validationError = validateAudioFile(file);
@@ -35,11 +37,12 @@ export function UploadDropzone({ userId }: UploadDropzoneProps) {
       }
 
       const lectureId = crypto.randomUUID();
-      const COMPRESS_THRESHOLD = 5 * 1024 * 1024; // below this, compression overhead isn't worth it
+      const COMPRESS_THRESHOLD = 5 * 1024 * 1024;
+      const isVideo = file.type.startsWith("video/");
 
       try {
         let uploadFile = file;
-        if (file.size > COMPRESS_THRESHOLD) {
+        if (isVideo || file.size > COMPRESS_THRESHOLD) {
           setStage("compressing");
           uploadFile = await compressAudioForUpload(file, setProgress);
           setProgress(0);
@@ -104,9 +107,9 @@ const busy =
           isDragOver ? "border-highlighter bg-highlighter/5" : "border-ink-rule"
         )}
       >
-        <input ref={inputRef} type="file" accept="audio/*" className="hidden" onChange={onPick} />
-        <p className="text-paper">
-          {fileName ?? "Drop an audio file here, or click to choose one"}
+      <input ref={inputRef} type="file" accept="audio/*,video/mp4" className="hidden" onChange={onPick} />        
+      <p className="text-paper">
+          {fileName ?? "Drop an audio file or MP4 video here, or click to choose one"}
         </p>
       </div>
 
@@ -128,7 +131,7 @@ const busy =
     {(stage === "compressing" || stage === "uploading") && (
       <div className="mt-4">
         <div className="flex items-center justify-between text-xs text-paper-dim">
-          <span>{stage === "compressing" ? "Compressing audio…" : "Uploading…"}</span>
+          <span>{stage === "compressing" && `${isVideoFile ? "Extracting audio" : "Compressing audio"}… ${progress}%`}</span>
           <span className="font-mono">{progress}%</span>
         </div>
         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-ink-rule">

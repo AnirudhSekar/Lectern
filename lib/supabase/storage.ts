@@ -2,17 +2,16 @@ import { createClient } from "@/lib/supabase/client";
 import * as tus from "tus-js-client";
 
 const BUCKET = "lecture-audio";
-const MAX_BYTES = 200 * 1024 * 1024; // 200MB
-const ALLOWED_TYPE_PREFIX = "audio/";
 const RESUMABLE_THRESHOLD = 6 * 1024 * 1024; // Supabase's own cutoff: standard upload is unreliable above this
 
 export function validateAudioFile(file: File): string | null {
-  if (!file.type.startsWith(ALLOWED_TYPE_PREFIX)) {
-    return "Only audio files are allowed.";
+  const isAudio = file.type.startsWith("audio/");
+  const isMp4Video = file.type === "video/mp4";
+
+  if (!isAudio && !isMp4Video) {
+    return "Only audio files or MP4 videos are allowed.";
   }
-  if (file.size > MAX_BYTES) {
-    return "File is larger than the 200MB limit.";
-  }
+
   return null;
 }
 

@@ -1,5 +1,5 @@
 'use client';
-
+import { Logo } from "@/components/Logo";
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,8 +40,9 @@ export function AppHeader({ email, name, avatarUrl }: AppHeaderProps) {
   return (
     <header className="border-b border-ink-rule">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
-        <Link href="/dashboard" className="font-display text-lg italic text-paper">
-          Lectern
+        <Link href="/dashboard" className="flex items-center gap-2">
+        <Logo />
+        <span className="font-display text-lg italic text-paper">Lectern</span>
         </Link>
 
         <div className="relative" ref={menuRef}>

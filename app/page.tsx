@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server";
 import {redirect} from "next/navigation";
+import { Logo } from "@/components/Logo";
 const STEPS = [
   {
     icon: Mic,
@@ -33,13 +34,15 @@ export default async function Home() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-10 sm:py-16">
       <header className="flex items-center justify-between">
-        <span className="font-display text-lg italic text-paper">Lectern</span>
+        <span className="flex items-center gap-2">
+          <Logo />
+          <span className="font-display text-lg italic text-paper">Lectern</span>
+        </span>
         <Link href="/login">
-  <Button variant="secondary" className="text-xs">
-    Sign in
-  </Button>
-</Link>
-        
+          <Button variant="secondary" className="text-xs">
+            Sign in
+          </Button>
+        </Link> 
       </header>
 
       <section className="mt-16 grid gap-12 sm:mt-24 lg:grid-cols-2 lg:items-center lg:gap-8">
