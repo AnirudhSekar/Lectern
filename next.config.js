@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    serverExternalPackages: ["ffmpeg-static", "fluent-ffmpeg"],
+  serverExternalPackages: ["ffmpeg-static", "fluent-ffmpeg"],
+  outputFileTracingIncludes: {
+    "/api/inngest/link/route": ["./node_modules/ffmpeg-static/**"],
+  },
   reactStrictMode: true,
   images: {
     remotePatterns: [
