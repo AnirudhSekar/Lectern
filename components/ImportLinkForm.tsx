@@ -66,9 +66,6 @@ export function ImportLinkForm() {
           required
           className="w-full rounded-lg border border-ink-rule bg-transparent px-3 py-2 text-sm text-paper placeholder:text-paper-dim focus:outline-none focus:border-highlighter disabled:opacity-50"
         />
-        <p className="text-xs text-paper-dim mt-1">
-          Google Drive files must be shared as "Anyone with the link."
-        </p>
       </div>
 
       {stage === "importing" && (
