@@ -13,28 +13,27 @@ export async function extractAudioServerSide(
   inputBuffer: Buffer,
   inputExt: string
 ): Promise<Buffer> {
-  const jobId = randomUUID();
-  const inputPath = join(tmpdir(), `${jobId}-in.${inputExt}`);
-  const outputPath = join(tmpdir(), `${jobId}-out.mp3`);
+  const workerUrl = process.env.FFMPEG_WORKER_URL;
+  const workerSecret = process.env.WORKER_SECRET;
 
-  await writeFile(inputPath, inputBuffer);
-
-  try {
-    await new Promise<void>((resolve, reject) => {
-      ffmpeg(inputPath)
-        .noVideo()
-        .audioChannels(1)
-        .audioFrequency(16000)
-        .audioBitrate("32k")
-        .output(outputPath)
-        .on("end", () => resolve())
-        .on("error", (err) => reject(err))
-        .run();
-    });
-
-    return await readFile(outputPath);
-  } finally {
-    await unlink(inputPath).catch(() => {});
-    await unlink(outputPath).catch(() => {});
+  if (!workerUrl || !workerSecret) {
+    throw new Error("FFMPEG_WORKER_URL or WORKER_SECRET not configured");
   }
+
+  const res = await fetch(`${workerUrl}/extract?ext=${inputExt}`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/octet-stream",
+    "x-worker-secret": workerSecret,
+  },
+  body: new Uint8Array(inputBuffer),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`ffmpeg worker failed (${res.status}): ${body}`);
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 }

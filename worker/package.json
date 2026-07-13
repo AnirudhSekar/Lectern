@@ -1,0 +1,10 @@
+{
+  "name": "lectern-ffmpeg-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^4.19.2",
+    "fluent-ffmpeg": "^2.1.3"
+  }
+}
