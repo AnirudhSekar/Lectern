@@ -5,9 +5,16 @@ import { createClient } from "@/lib/supabase/client";
 export async function signInWithGoogle() {
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
-  });
+  provider: "google",
+  options: {
+    scopes: "https://www.googleapis.com/auth/drive.readonly",
+    queryParams: {
+      access_type: "offline",
+      prompt: "consent",
+    },
+    redirectTo: `${location.origin}/auth/callback`,
+  },
+});
   if (error) throw error;
 }
 

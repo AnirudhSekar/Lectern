@@ -1,39 +1,54 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { UploadDropzone } from '@/components/UploadDropzone';
-import { ImportLinkForm } from '@/components/ImportLinkForm';
+import { useState } from "react";
+import { UploadDropzone } from "@/components/UploadDropzone";
+import { ImportLinkForm } from "@/components/ImportLinkForm";
+import { cn } from "@/lib/utils";
 
-export function UploadTabs({ userId }: { userId: string }) {
-  const [tab, setTab] = useState<'file' | 'link'>('file');
+interface UploadTabsProps {
+  userId: string;
+}
+
+export function UploadTabs({ userId }: UploadTabsProps) {
+  const [tab, setTab] = useState<"upload" | "link">("upload");
 
   return (
     <div>
-      <div className="mb-6 flex gap-1 rounded-md border border-ink-rule p-1">
-        <button
-          type="button"
-          onClick={() => setTab('file')}
-          className={cn(
-            "flex-1 rounded-sm py-2 text-sm transition-colors",
-            tab === 'file' ? "bg-highlighter/10 text-highlighter" : "text-paper-dim hover:text-paper"
-          )}
-        >
+      <div className="flex border-b mb-4">
+        <TabButton active={tab === "upload"} onClick={() => setTab("upload")}>
           Upload a file
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('link')}
-          className={cn(
-            "flex-1 rounded-sm py-2 text-sm transition-colors",
-            tab === 'link' ? "bg-highlighter/10 text-highlighter" : "text-paper-dim hover:text-paper"
-          )}
-        >
+        </TabButton>
+        <TabButton active={tab === "link"} onClick={() => setTab("link")}>
           Import from a link
-        </button>
+        </TabButton>
       </div>
 
-      {tab === 'file' ? <UploadDropzone userId={userId} /> : <ImportLinkForm />}
+      {tab === "upload" ? <UploadDropzone userId={userId} /> : <ImportLinkForm />}
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+        active
+          ? "border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
   );
 }
