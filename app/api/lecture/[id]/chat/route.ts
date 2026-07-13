@@ -38,11 +38,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   const queryEmbedding = await embedSearchQuery(question);
 
-  const { data: chunks, error: chunkError } = await supabase.rpc("match_lecture_chunks", {
-    query_embedding: queryEmbedding,
-    target_lecture_id: lectureId,
-    match_count: 6,
-  });
+ const { data: chunks, error: chunkError } = await supabase.rpc("match_lecture_chunks", {
+  query_embedding: queryEmbedding,
+  target_lecture_id: lectureId,
+  match_count: 6,
+});
 
   if (chunkError) {
     return new Response(`Retrieval failed: ${chunkError.message}`, { status: 500 });
